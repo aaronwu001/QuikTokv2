@@ -1,0 +1,82 @@
+{% extends "base.html" %} {% block title %} Talks Near You {% endblock %}
+{%block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='talksnearyou.css') }}"
+/>
+
+<div class="wrapper">
+  <h1>Talks Near You</h1>
+  <!--<p>User ID: <span id="user-id">{{ user_id }}</span></p>-->
+
+  <ul id="talks-list"></ul>
+</div>
+
+<!-- Script -->
+<script>
+  // Get userid from query params
+  const params = new URLSearchParams(window.location.search);
+  const user_id = params.get("user_id");
+
+  const fetchTalks = () => {
+    fetch("/show-near-talks", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const talksList = document.getElementById("talks-list");
+        talksList.innerHTML = ""; // Clear the list before updating
+
+        data.forEach((talk) => {
+          const li = document.createElement("li");
+          li.textContent = `${talk.topic} - ${talk.distance}`; // Display the talk title and location
+
+          // Create a join button
+          const joinButton = document.createElement("button");
+          joinButton.textContent = "Join";
+          joinButton.onclick = () => joinTalk(talk["talk_id"]); // Call joinTalk on click
+
+          li.appendChild(joinButton); // Append the button to the list item
+          talksList.appendChild(li);
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching talks:", error);
+      });
+  };
+
+  const joinTalk = (talk_id) => {
+    fetch("/select-talk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        talk_id: talk_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        if (data.redirect) {
+          window.location.href = data.redirect; // Redirect to the ontheway page
+        }
+      })
+      .catch((error) => {
+        window.location.href = "/on_the_way?user_id=" + user_id; // Redirect to the ontheway page
+        console.error("Error selecting talk:", error);
+      });
+  };
+
+  // Fetch talks every 10 seconds
+  setInterval(fetchTalks, 10000);
+  // Initial fetch when the page loads
+  fetchTalks();
+</script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %} {% block title %} On The Way {% endblock %} {% block
+content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='ontheway.css') }}"
+/>
+
+<div class="wrapper">
+  <h1>On The Way to {{ talk_title }}</h1>
+
+  <div>
+    <label for="message">Update Message:</label>
+    <input type="text" id="message" />
+    <button id="update-msg" class="btn">Update Message</button>
+  </div>
+
+  <div>
+    <button id="attendee-arrive" class="btn">Mark as Arrived</button>
+    <button id="attendee-cancel" class="btn">Cancel Attendance</button>
+  </div>
+
+  <h2>Current Participants</h2>
+  <ul id="participant-list"></ul>
+</div>
+
+<!-- Script -->
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const user_id = params.get("user_id");
+  const talk_id = params.get("talk_id");
+
+  // Function to fetch and display participants
+  const fetchParticipants = () => {
+    fetch("/get-attendees", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: user_id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const participantList = document.getElementById("participant-list");
+        participantList.innerHTML = ""; // Clear the list before updating
+
+        Object.values(data).forEach((participant) => {
+          const li = document.createElement("li");
+          li.textContent = participant.username; // Display the participant's username
+          participantList.appendChild(li);
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching participants:", error);
+      });
+  };
+
+  // Function to check the talk status
+  const checkTalkStatus = () => {
+    fetch("/check-talk-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: user_id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const talkStatus = data.talk_status;
+        if (talkStatus === "done") {
+          window.location.href =
+            "/finalpage?user_id=" + user_id + "&talk_id=" + talk_id; // Redirect to /done
+        } else if (talkStatus === "cancelled") {
+          window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+        }
+        // If talkStatus is 'inProgress', do nothing
+      })
+      .catch((error) => {
+        console.error("Error checking talk status:", error);
+      });
+  };
+
+  // Event listeners for buttons
+  document.getElementById("update-msg").addEventListener("click", () => {
+    const message = document.getElementById("message").value;
+
+    fetch("/update-message", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        message: message,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Update Message Success:", data);
+        alert("Message updated successfully!");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred while updating the message.");
+      });
+  });
+
+  document.getElementById("attendee-arrive").addEventListener("click", () => {
+    fetch("/attendee-arrive", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: user_id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Attendee Arrived:", data);
+        alert("Marked as arrived successfully!");
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  });
+
+  document.getElementById("attendee-cancel").addEventListener("click", () => {
+    fetch("/attendee-cancel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ user_id: user_id }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        console.log("Attendee Cancelled:", data);
+        alert("Attendance canceled successfully!");
+        window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+      })
+      .catch((error) => {
+        window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+        console.error("Error:", error);
+      });
+  });
+
+  // Set up the talk status check and participant fetch every 5 seconds
+  setInterval(fetchParticipants, 5000);
+  setInterval(checkTalkStatus, 5000);
+  // Initial fetch when the page loads
+  fetchParticipants();
+  checkTalkStatus();
+</script>
+{% endblock %}

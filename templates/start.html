@@ -1,0 +1,26 @@
+{% extends "base.html" %} {% block title %} Start Chat {% endblock %} {% block
+content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='start.css') }}" />
+
+<div class="container" style="background-color: #382950">
+  <h1>Start Chat</h1>
+  <button id="host-button" class="button">Host a Chat</button>
+  <button id="join-button" class="button">Join a Chat</button>
+</div>
+
+<script>
+  // Get user_id from query parameters
+  const params = new URLSearchParams(window.location.search);
+  const userId = params.get("user_id");
+
+  // Redirect to host settings with user_id as a query parameter
+  document.getElementById("host-button").addEventListener("click", () => {
+    window.location.href = `/hostsettings?user_id=${userId}`;
+  });
+
+  // Redirect to talks near you with user_id as a query parameter
+  document.getElementById("join-button").addEventListener("click", () => {
+    window.location.href = `/talksnearyou?user_id=${userId}`;
+  });
+</script>
+{% endblock %}

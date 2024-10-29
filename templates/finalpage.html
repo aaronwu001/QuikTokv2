@@ -1,0 +1,14 @@
+{% extends "base.html" %} {% block title %} Start Chat {% endblock %} {% block
+content %}
+<link rel="stylesheet" href="{{ url_for('static', filename = 'start.css') }}" />
+
+<div class="container" style="background-color: #49087e">
+  <h1>Have fun with:</h1>
+  <ul>
+    {% for user in users %}
+    <!-- Display each user -->
+    <li>{{ user.username }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

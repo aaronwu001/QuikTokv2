@@ -1,0 +1,114 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: #333;
+  /* background: url("landscapeTest2.png") no-repeat; */
+  /* background: rgb(92, 9, 95); */
+  background-size: cover;
+  background-position: center;
+  
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  color: #ffffff;
+  text-align: center;
+}
+
+/* Center the geolocation container */
+#geolocation-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 1000;
+  margin-bottom: 20px;
+}
+
+#map {
+  width: 100%;
+  max-width: 1000px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 10px 6px rgba(49, 49, 49, 0.1);
+}
+
+/* Button styling */
+.btn {
+  height: 45px;
+  width: 300px;
+  background-color: #fff;
+  border: none;
+  outline: none;
+  border-radius: 40px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  font-size: 16px;
+  color: #333;
+  font-weight: 600;
+  transition-duration: 0.2s;
+
+}
+
+.btn:hover {
+  background-color: rgb(104, 71, 146);
+  color:rgb(163, 163, 163);
+}
+
+/* Responsive styling */
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  #map {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .btn {
+    width: 100%;
+  }
+}
+
+/* Center the map and content */
+#location-container {
+  width: 100%;
+  max-width: 800px;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Map container */
+#geolocation-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+#map {
+  width: 100%;
+  height: 450px;
+  border-radius: 8px;
+}

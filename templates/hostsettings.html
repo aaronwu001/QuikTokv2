@@ -1,0 +1,81 @@
+{% extends "base.html" %} {% block title %} Host Settings {% endblock %} {%
+block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='hostsettings.css') }}"
+/>
+
+<div class="wrapper">
+  <h1>Enter Host Settings</h1>
+
+  <form id="host-settings-form" method="post">
+    <div class="input-box">
+      <input type="text" id="topic" name="topic" placeholder="Topic" />
+    </div>
+    <div class="input-box">
+      <input
+        type="number"
+        id="max-size"
+        name="max_size"
+        placeholder="Max Size"
+        required
+      />
+    </div>
+    <input type="submit" value="Submit" class="btn" />
+  </form>
+</div>
+
+<!-- Script -->
+<script>
+  const form = document.getElementById("host-settings-form");
+
+  const submitForm = (event) => {
+    event.preventDefault(); // Prevent default form submission
+
+    // Get user_id from query params
+    const params = new URLSearchParams(window.location.search);
+    const user_id = params.get("user_id");
+
+    // Get values from form inputs
+    const topic = document.getElementById("topic").value;
+    const max_size = document.getElementById("max-size").value;
+
+    console.log(user_id, topic, max_size);
+
+    // Send POST request to Flask with user_id, topic, and max_size
+    fetch("/create-talk", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+        topic: topic,
+        max_size: max_size,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error("Network response was not ok.");
+      })
+      .then((data) => {
+        console.log("Success:", data);
+        alert("Settings saved successfully!"); // User feedback
+
+        // Redirect to /showparticipants with user_id as query parameter
+        talk_id = data.talk_id;
+
+        window.location.href = `/showparticipants?user_id=${user_id}&talk_id=${talk_id}`;
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+        alert("An error occurred while saving settings."); // User feedback
+      });
+  };
+
+  // Attach submit event listener to the form
+  form.addEventListener("submit", submitForm);
+</script>
+{% endblock %}

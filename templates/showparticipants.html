@@ -1,0 +1,134 @@
+{% extends "base.html" %} {% block title %} Show Participants {% endblock %} {%
+block content %}
+<link
+  rel="stylesheet"
+  href="{{ url_for('static', filename='showparticipants.css') }}"
+/>
+
+<div class="container" style="background-color: #49087e">
+  <h1>Current Participants</h1>
+
+  <ul id="attendee-list"></ul>
+
+  <div>
+    <button id="cancel-btn">Cancel Talk</button>
+    <button id="done-btn">Mark Talk as Done</button>
+  </div>
+</div>
+
+<!-- Script -->
+<script>
+  // Get user ID from query params
+  const params = new URLSearchParams(window.location.search);
+  const user_id = params.get("user_id");
+  const talk_id = params.get("talk_id");
+
+  const fetchAttendees = () => {
+    fetch("/get-attendees", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const attendeeList = document.getElementById("attendee-list");
+        attendeeList.innerHTML = ""; // Clear the list before updating
+
+        data.forEach((attendee) => {
+          const li = document.createElement("li");
+          li.textContent =
+            attendee.username + " " + attendee.status + " " + attendee.message; // Create a list item for each attendee
+          attendeeList.appendChild(li);
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching attendees:", error);
+      });
+  };
+
+  const checkTalkStatus = () => {
+    fetch("/check-talk-status", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        const talkStatus = data.talk_status;
+        if (talkStatus === "done") {
+          window.location.href =
+            "/finalpage?user_id=" + user_id + "&talk_id=" + talk_id; // Redirect to /done
+        } else if (talkStatus === "cancelled") {
+          window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+        }
+        // If talkStatus is 'inProgress', do nothing
+      })
+      .catch((error) => {
+        console.error("Error checking talk status:", error);
+      });
+  };
+
+  const cancelTalk = () => {
+    fetch("/host-cancel", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert("Success: " + data); // Show a message from the server
+        window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+      })
+      .catch((error) => {
+        window.location.href = "/start?user_id=" + user_id; // Redirect to /start
+        console.error("Error cancelling talk:", error);
+      });
+  };
+
+  const markTalkAsDone = () => {
+    fetch("/host-done", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        user_id: user_id,
+      }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        alert("Success: " + data); // Show a message from the server
+        window.location.href =
+          "/finalpage?user_id=" + user_id + "&talk_id=" + talk_id; // Redirect to /done
+      })
+      .catch((error) => {
+        window.location.href =
+          "/finalpage?user_id=" + user_id + "&talk_id=" + talk_id; // Redirect to /done
+        console.error("Error marking talk as done:", error);
+      });
+  };
+
+  // Set up event listeners for buttons
+  document.getElementById("cancel-btn").addEventListener("click", cancelTalk);
+  document.getElementById("done-btn").addEventListener("click", markTalkAsDone);
+
+  // Fetch attendees every 5 seconds
+  setInterval(fetchAttendees, 5000);
+  // Check talk status every 5 seconds
+  setInterval(checkTalkStatus, 5000);
+  // Initial fetch when the page loads
+  fetchAttendees();
+</script>
+{% endblock %}

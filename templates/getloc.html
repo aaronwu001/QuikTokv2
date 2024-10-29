@@ -1,0 +1,128 @@
+{% extends "base.html" %} {% block title %} Your Location {% endblock %} {%
+block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='getloc.css') }}" />
+<!-- Include Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+
+<h1>Choose Location</h1>
+
+<div id="geolocation-container">
+  <!-- Leaflet map container -->
+  <div id="map" style="width: 100%; height: 450px; border-radius: 8px"></div>
+</div>
+<button id="confirm-location" class="btn" style="margin-top: 20px">
+  Confirm Location
+</button>
+
+<!-- Include Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<script>
+  let marker; // Variable to store the draggable marker
+
+  // Initialize the map with default coordinates (0,0) and zoom level 2
+  const map = L.map("map").setView([0, 0], 2);
+
+  // Add OpenStreetMap tiles to the Leaflet map
+  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 18,
+    attribution:
+      '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+  }).addTo(map);
+
+  // Attempt to get the user's location
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(showPosition, showError);
+  } else {
+    alert("Geolocation is not supported by this browser.");
+  }
+
+  function showPosition(position) {
+    const lat = position.coords.latitude;
+    const lon = position.coords.longitude;
+
+    // Center the map on the user's location
+    map.setView([lat, lon], 13);
+
+    // Add a draggable marker at the user's location
+    marker = L.marker([lat, lon], { draggable: true })
+      .addTo(map)
+      .bindPopup("Drag to adjust your location.")
+      .openPopup();
+  }
+
+  function showError(error) {
+    // If location permission is denied or any other error, center the map at [0, 0]
+    const DEFAULT_POSITION = {
+      coords: { latitude: 40.504, longitude: -74.46 },
+    }; // Default position object
+
+    switch (error.code) {
+      case error.PERMISSION_DENIED:
+        alert(
+          "Geolocation permission denied. Map centered at default location."
+        );
+        break;
+      case error.POSITION_UNAVAILABLE:
+        alert(
+          "Location information is unavailable. Map centered at default location."
+        );
+        break;
+      case error.TIMEOUT:
+        alert(
+          "Request for location timed out. Map centered at default location."
+        );
+        break;
+      case error.UNKNOWN_ERROR:
+        alert("An unknown error occurred. Map centered at default location.");
+        break;
+    }
+    showPosition(DEFAULT_POSITION);
+  }
+  // Event listener for the "Confirm Location" button
+  document
+    .getElementById("confirm-location")
+    .addEventListener("click", function () {
+      if (marker) {
+        const lat = marker.getLatLng().lat; // Get the latitude from the marker
+        const lon = marker.getLatLng().lng; // Get the longitude from the marker
+
+        // Get userid from query params
+        const params = new URLSearchParams(window.location.search);
+        const user_id = params.get("user_id");
+
+        // Send POST request to Flask with latitude and longitude
+        fetch("/getloc", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            user_id: user_id,
+            latitude: lat,
+            longitude: lon,
+          }),
+        })
+          .then((response) => {
+            if (response.redirected) {
+              // If redirected, change the window location to the new URL
+              window.location.href = response.url;
+            } else {
+              return response.json(); // Handle errors or other responses
+            }
+          })
+          .then((data) => {
+            if (data) {
+              console.log("Success:", data);
+              alert("Location submitted successfully!");
+            }
+          })
+          .catch((error) => {
+            console.error("Error:", error);
+            alert("Error submitting location.");
+          });
+      } else {
+        alert("Please select a location first.");
+      }
+    });
+</script>
+{% endblock %}

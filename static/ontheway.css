@@ -1,0 +1,15 @@
+/* Basic reset and styling */
+* {
+  margin: 0;
+  padding: 8px;
+  box-sizing: border-box;
+  font-family: Arial, sans-serif;
+}
+body {
+  min-height: 100vh;
+}
+.wrapper{
+  margin: auto;
+  margin-top: 20px;
+  width: 60%;
+}
