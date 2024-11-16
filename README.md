@@ -96,3 +96,7 @@ Update Nov. 15th 2024: The demo is no longer available.
 ### Prerequisites
 - Python 3.8+
 - MongoDB Atlas account
+
+-- 
+## License
+This repository is for reference purposes only. Use, modification, or distribution is not permitted without explicit permission.
